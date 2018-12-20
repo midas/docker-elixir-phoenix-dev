@@ -9,7 +9,9 @@ USAGE="build elixir-version=1.5.2 erlang-version=20.1 [--latest]"
 
 #me=`basename $0`
 latest=false
+build=true
 push=true
+owner=midas
 
 for i in "$@"
   do
@@ -24,6 +26,10 @@ for i in "$@"
       ;;
       --latest)
       latest=true
+      shift
+      ;;
+      --no-build)
+      build=false
       shift
       ;;
       --no-push)
@@ -49,12 +55,20 @@ tag=erl$erlang_version-elixir$elixir_version
 echo $tag
 image_name=elixir-phoenix-dev
 
-docker build -t midas/$image_name:$tag --build-arg ERLANG_VERSION=$erlang_version --build-arg ELIXIR_VERSION=$elixir_version -f Dockerfile .
-
-if $latest; then
-  docker tag midas/$image_name:$tag midas/$image_name:latest
+if $build; then
+  echo "===> Building $image_name:$version"
+  docker build -t midas/$image_name:$tag --build-arg ERLANG_VERSION=$erlang_version --build-arg ELIXIR_VERSION=$elixir_version -f Dockerfile .
 fi
 
-exit
-announce "Pushing $image_name:$version to Registry"
-docker push $image_name:$version
+if $latest; then
+  echo "===> Tagging image as latest"
+  docker tag $owner/$image_name:$tag midas/$image_name:latest
+fi
+
+if $push; then
+  echo "===> Pushing $image_name:$tag to Registry"
+  docker push $owner/$image_name:$tag
+  if $latest; then
+    docker push $owner/$image_name:latest
+  fi
+fi
