@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+current_dir="$(dirname "$0")"
+#source $current_dir/shared/all
+
+#die_on_sigint
+
+USAGE="build elixir-version=1.5.2 erlang-version=20.1 [--latest]"
+
+#me=`basename $0`
+latest=false
+push=true
+
+for i in "$@"
+  do
+  case $i in
+      --erlang-version=*)
+			erlang_version="${i#*=}"
+      shift
+      ;;
+      --elixir-version=*)
+			elixir_version="${i#*=}"
+      shift
+      ;;
+      --latest)
+      latest=true
+      shift
+      ;;
+      --no-push)
+      push=false
+      shift
+      ;;
+      --help|-h)
+      echo "Build a docker image suitable for Elixir Phoenix app development or building/releasing"
+      echo ""
+      echo Usage:
+      echo -e "  $USAGE"
+      exit
+      ;;
+      *)
+      positional+=("$1")
+      shift
+      ;;
+  esac
+  done
+
+tag=erl$erlang_version-elixir$elixir_version
+
+echo $tag
+image_name=elixir-phoenix-dev
+
+docker build -t midas/$image_name:$tag --build-arg ERLANG_VERSION=$erlang_version --build-arg ELIXIR_VERSION=$elixir_version -f Dockerfile .
+
+if $latest; then
+  docker tag midas/$image_name:$tag midas/$image_name:latest
+fi
+
+exit
+announce "Pushing $image_name:$version to Registry"
+docker push $image_name:$version
