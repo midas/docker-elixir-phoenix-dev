@@ -1,17 +1,6 @@
 FROM alpine:3.7
 MAINTAINER Jason Harrelson <jason@lookforwardenterprises.com>
 
-ARG ERLANG_VERSION
-ARG ELIXIR_VERSION
-
-ENV REFRESHED_AT=2018-06-06 \
-    LANG=en_US.UTF-8 \
-    HOME=/opt/app/ \
-    # Set this so that CTRL+G works properly
-    TERM=xterm
-
-#ENV ERLANG_VERSION 20.1
-#ENV ELIXIR_VERSION 1.5.2
 
 # Base Dev
 RUN apk --no-cache upgrade && apk --no-cache add \
@@ -27,6 +16,15 @@ RUN apk --no-cache upgrade && \
 
 # Elixir
 WORKDIR /tmp/erlang-build
+
+ARG ERLANG_VERSION
+ARG ELIXIR_VERSION
+
+ENV REFRESHED_AT=2019-01-23 \
+    LANG=en_US.UTF-8 \
+    HOME=/opt/app/ \
+    # Set this so that CTRL+G works properly
+    TERM=xterm
 
 # Install Erlang
 RUN \
@@ -52,8 +50,8 @@ RUN \
       zlib-dev@main && \
     # Install Erlang/OTP build deps
     apk add --no-cache --virtual .erlang-build \
-      dpkg-dev@main dpkg@main \
-      git@main autoconf@main build-base@main perl-dev@main && \
+      dpkg-dev dpkg \
+      git autoconf build-base perl-dev && \
     # Shallow clone Erlang/OTP
     git clone -b OTP-$ERLANG_VERSION --single-branch --depth 1 https://github.com/erlang/otp.git . && \
     # Erlang/OTP build env
@@ -94,7 +92,7 @@ RUN \
     make -j4 && make install && \
     # Cleanup
     apk del --force .erlang-build && \
-    cd $HOME && \
+    #cd $HOME && \
     rm -rf /tmp/erlang-build && \
     # Update ca certificates
     update-ca-certificates --fresh

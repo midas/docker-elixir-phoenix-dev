@@ -5,7 +5,7 @@ current_dir="$(dirname "$0")"
 
 #die_on_sigint
 
-USAGE="build elixir-version=1.5.2 erlang-version=20.1 [--latest]"
+USAGE="build --elixir-version=1.5.2 --erlang-version=20.1 [--latest]"
 
 #me=`basename $0`
 latest=false
