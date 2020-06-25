@@ -20,7 +20,7 @@ WORKDIR /tmp/erlang-build
 ARG ERLANG_VERSION
 ARG ELIXIR_VERSION
 
-ENV REFRESHED_AT=2019-01-23 \
+ENV REFRESHED_AT=2019-07-17 \
     LANG=en_US.UTF-8 \
     HOME=/opt/app/ \
     # Set this so that CTRL+G works properly
