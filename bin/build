@@ -54,7 +54,7 @@ for i in "$@"
   esac
   done
 
-tag=$linux_flavor-erl$erlang_version-elixir$elixir_version
+tag=$linux_flavor-erl-fips$erlang_version-ex$elixir_version
 
 echo $tag
 image_name=elixir-phoenix-dev

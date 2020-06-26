@@ -26,6 +26,7 @@ RUN \
     ./otp_build autoconf && \
     ./configure --prefix=/usr \
       --build="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+      --enable-fips \
       --sysconfdir=/etc \
       --mandir=/usr/share/man \
       --infodir=/usr/share/info \
