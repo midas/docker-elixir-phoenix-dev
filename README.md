@@ -6,4 +6,4 @@ within Docker containers
 
 ## Usage
 
-`(cd [linux flavor here] && bin/build --erlang-version=20.1 --elixir-version=1.5.2)`
+`bin/build --erlang-version=20.1 --elixir-version=1.5.2 --linux-flavor=centos`
