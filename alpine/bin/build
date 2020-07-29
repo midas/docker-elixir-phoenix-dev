@@ -54,23 +54,71 @@ for i in "$@"
   esac
   done
 
-tag=alp$alpine_version-erl$erlang_version-elixir$elixir_version
+tag=alp$alpine_version-erl$erlang_version-ex$elixir_version
 
-echo $tag
 image_name=elixir-phoenix-dev
 
+timestamp=$(date +"%Y-%m-%d")
+
+function announce(){
+  echo -e "\033[0;36m===> $1\033[00m"
+}
+
+function announce_warn(){
+  echo -e "\033[0;33m===> $1\033[00m"
+}
+
+function announce_error(){
+  echo -e "\033[0;31m===> $1\033[00m"
+}
+
+function error(){
+  echo -e "\033[0;31m$1\033[00m"
+}
+
+function success(){
+  echo -e "\033[0;32m$1\033[00m"
+}
+
+function warn(){
+  echo -e "\033[0;33m$1\033[00m"
+}
+
+function die(){
+  echo -e "\033[0;31mFATAL: $1\033[00m"
+  exit 1
+}
+
+function step(){
+  echo -e "\033[0;35m=== $1\033[00m"
+}
+
+function separator() {
+  echo ""
+  echo "==============================================="
+  echo ""
+}
+
+
 if $build; then
-  echo "===> Building $image_name:$version"
+  announce "Building $image_name:$tag"
+  step "Generating Dockerfile for $image_name:$tag"
+  export REFRESHED_AT=$timestamp ALPINE_VERSION=$alpine_version ELIXIR_VERSION=$elixir_version ERLANG_VERSION=$erlang_version
+  contents=`envsubst '${ALPINE_VERSION} ${ELIXIR_VERSION} ${ERLANG_VERSION} ${REFRESHED_AT}' < $current_dir/../Dockerfile_`
+  rm -rf $current_dir/../Dockerfile
+  echo "$contents" > $current_dir/../Dockerfile
+
+  step "Executing Docker Build for $image_name:$tag"
   docker build -t midas/$image_name:$tag --build-arg ERLANG_VERSION=$erlang_version --build-arg ELIXIR_VERSION=$elixir_version -f Dockerfile .
 fi
 
 if $latest; then
-  echo "===> Tagging image as latest"
+  announce "Tagging image as latest"
   docker tag $owner/$image_name:$tag midas/$image_name:latest
 fi
 
 if $push; then
-  echo "===> Pushing $image_name:$tag to Registry"
+  announce "Pushing $image_name:$tag to Registry"
   docker push $owner/$image_name:$tag
   #if $latest; then
     #docker push $owner/$image_name:latest
