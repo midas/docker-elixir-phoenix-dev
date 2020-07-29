@@ -5,7 +5,7 @@ current_dir="$(dirname "$0")"
 
 #die_on_sigint
 
-USAGE="build --elixir-version=1.5.2 --erlang-version=20.1 [--latest]"
+USAGE="build --alpine-version=[ALPINE VERSION] --elixir-version=[ELIXIR VERSION] --erlang-version=[ERLANG VERSION] [--latest]"
 
 #me=`basename $0`
 latest=false
@@ -16,27 +16,31 @@ owner=midas
 for i in "$@"
   do
   case $i in
-      --erlang-version=*)
-			erlang_version="${i#*=}"
+    --alpine-version=*)
+      alpine_version="${i#*=}"
       shift
       ;;
-      --elixir-version=*)
-			elixir_version="${i#*=}"
+    --erlang-version=*)
+      erlang_version="${i#*=}"
       shift
       ;;
-      --latest)
+    --elixir-version=*)
+      elixir_version="${i#*=}"
+      shift
+      ;;
+    --latest)
       latest=true
       shift
       ;;
-      --no-build)
+    --no-build)
       build=false
       shift
       ;;
-      --no-push)
+    --no-push)
       push=false
       shift
       ;;
-      --help|-h)
+    --help|-h)
       echo "Build a docker image suitable for Elixir Phoenix app development or building/releasing"
       echo ""
       echo Usage:
@@ -50,7 +54,7 @@ for i in "$@"
   esac
   done
 
-tag=erl$erlang_version-elixir$elixir_version
+tag=alp$alpine_version-erl$erlang_version-elixir$elixir_version
 
 echo $tag
 image_name=elixir-phoenix-dev
@@ -68,7 +72,7 @@ fi
 if $push; then
   echo "===> Pushing $image_name:$tag to Registry"
   docker push $owner/$image_name:$tag
-  if $latest; then
-    docker push $owner/$image_name:latest
-  fi
+  #if $latest; then
+    #docker push $owner/$image_name:latest
+  #fi
 fi

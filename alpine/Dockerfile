@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.12
 MAINTAINER Jason Harrelson <jason@lookforwardenterprises.com>
 
 
@@ -6,7 +6,7 @@ MAINTAINER Jason Harrelson <jason@lookforwardenterprises.com>
 RUN apk --no-cache upgrade && apk --no-cache add \
     bash binutils-gold ca-certificates clang cmake curl \
     file gawk gcc g++ git libc-dev libgcc \
-    llvm llvm-libs make openssh openssl python rsync vim wget zsh && \
+    make openssh openssl wget && \
     update-ca-certificates --fresh
 
 # Phoenix Dev
@@ -17,24 +17,15 @@ RUN apk --no-cache upgrade && \
 # Elixir
 WORKDIR /tmp/erlang-build
 
-ARG ERLANG_VERSION
-ARG ELIXIR_VERSION
-
-ENV REFRESHED_AT=2019-07-17 \
-    LANG=en_US.UTF-8 \
-    HOME=/opt/app/ \
-    # Set this so that CTRL+G works properly
-    TERM=xterm
-
-# Install Erlang
+# Install Erlang build deps
 RUN \
     # Create default user and home directory, set owner to default
     #mkdir -p "${HOME}" && \
     #adduser -s /bin/sh -u 1001 -G root -h "${HOME}" -S -D default && \
     #chown -R 1001:0 "${HOME}" && \
     # Add tagged repos as well as the edge repo so that we can selectively install edge packages
-    echo "@main http://dl-cdn.alpinelinux.org/alpine/v3.7/main" >> /etc/apk/repositories && \
-    echo "@community http://dl-cdn.alpinelinux.org/alpine/v3.7/community" >> /etc/apk/repositories && \
+    echo "@main http://dl-cdn.alpinelinux.org/alpine/v3.12/main" >> /etc/apk/repositories && \
+    echo "@community http://dl-cdn.alpinelinux.org/alpine/v3.12/community" >> /etc/apk/repositories && \
     echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
     # Upgrade Alpine and base packages
     apk --no-cache upgrade && \
@@ -51,9 +42,22 @@ RUN \
     # Install Erlang/OTP build deps
     apk add --no-cache --virtual .erlang-build \
       dpkg-dev dpkg \
-      git autoconf build-base perl-dev && \
-    # Shallow clone Erlang/OTP
-    git clone -b OTP-$ERLANG_VERSION --single-branch --depth 1 https://github.com/erlang/otp.git . && \
+      git autoconf build-base perl-dev
+
+ARG ERLANG_VERSION
+ARG ELIXIR_VERSION
+
+ENV REFRESHED_AT=2019-07-17 \
+    LANG=en_US.UTF-8 \
+    HOME=/opt/app/ \
+    # Set this so that CTRL+G works properly
+    TERM=xterm
+
+# Clone Erlang
+RUN git clone -b OTP-$ERLANG_VERSION --single-branch --depth 1 https://github.com/erlang/otp.git .
+
+# Install Erlang
+RUN \
     # Erlang/OTP build env
     export ERL_TOP=/tmp/erlang-build && \
     export PATH=$ERL_TOP/bin:$PATH && \
