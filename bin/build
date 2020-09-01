@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
 current_dir="$(dirname "$0")"
-#source $current_dir/shared/all
+source $current_dir/shared/all
 
-#die_on_sigint
+die_on_sigint
 
-USAGE="build --elixir-version=1.5.2 --erlang-version=20.1 --linux-flavor=centos [--latest] [--no-push]"
+USAGE="build --elixir-version=1.5.2 --erlang-version=20.1 --linux-flavor=centos --linux-version=7.7.1908 [--fips]  [--latest] [--no-push]"
 
 #me=`basename $0`
-latest=false
 build=true
-push=true
+docker_file_ext=std
+fips_mode=false
+latest=false
 owner=midas
+push=true
 
 for i in "$@"
   do
@@ -24,6 +26,11 @@ for i in "$@"
 			elixir_version="${i#*=}"
       shift
       ;;
+      --fips)
+        fips_mode=true
+        docker_file_ext=fips
+        shift
+        ;;
       --latest)
       latest=true
       shift
@@ -32,6 +39,10 @@ for i in "$@"
 			linux_flavor="${i#*=}"
       shift
       ;;
+      --linux-version=*)
+        linux_version="${i#*=}"
+        shift
+        ;;
       --no-build)
       build=false
       shift
@@ -52,16 +63,30 @@ for i in "$@"
       shift
       ;;
   esac
-  done
+done
 
-tag=$linux_flavor-erl-fips$erlang_version-ex$elixir_version
+ensure_param "linux_flavor" $linux_flavor
+ensure_param "linux_version" $linux_version
+
+if $fips_mode; then
+  tag=$linux_flavor$linux_version-erl-fips$erlang_version-ex$elixir_version
+else
+  tag=$linux_flavor$linux_version-erl$erlang_version-ex$elixir_version
+fi
 
 echo $tag
 image_name=elixir-phoenix-dev
+from=$linux_flavor:$linux_version
 
 if $build; then
-  echo "===> Building $image_name:$version"
-  (cd $linux_flavor &&docker build -t midas/$image_name:$tag --build-arg ERLANG_VERSION=$erlang_version --build-arg ELIXIR_VERSION=$elixir_version -f Dockerfile .)
+  echo "===> Building $image_name:$tag"
+  (
+    cd $linux_flavor &&
+    rm -f Dockerfile &&
+    export FROM=$from ERLANG_VERSION=$erlang_version ELIXIR_VERSION=$elixir_version &&
+    envsubst '${FROM} ${ERLANG_VERSION} ${ELIXIR_VERSION}' < Dockerfile.temp.$docker_file_ext > Dockerfile &&
+    docker build -t midas/$image_name:$tag -f Dockerfile .
+  )
 fi
 
 if $latest; then

@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+function announce(){
+  echo -e "\033[0;36m===> $1\033[00m"
+}
+
+function header(){
+  echo -e "\033[0;36m===========================================================\033[00m"
+  echo -e "\033[0;36m=   $1 \033[00m"
+  echo -e "\033[0;36m===========================================================\033[00m"
+}
+
+function error(){
+  echo -e "\033[0;31m$1\033[00m"
+}
+
+function success(){
+  echo -e "\033[0;32m$1\033[00m"
+}
+
+function warn(){
+  echo -e "\033[0;33m$1\033[00m"
+}
+
+function die(){
+  echo -e "\033[0;31mFATAL: $1\033[00m"
+  exit 1
+}
+
+function step(){
+  echo -e "\033[0;35m=== $1\033[00m"
+}
+
+function separator() {
+  echo ""
+  echo "==============================================="
+  echo ""
+}
+
+function display_time {
+  local T=$1
+  local D=$((T/60/60/24))
+  local H=$((T/60/60%24))
+  local M=$((T/60%60))
+  local S=$((T%60))
+  (( $D > 0 )) && printf '%d days ' $D
+  (( $H > 0 )) && printf '%d hours ' $H
+  (( $M > 0 )) && printf '%d minutes ' $M
+  (( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
+  printf '%d seconds\n' $S
+}
+
+function die_on_sigint(){
+  trap 'kill 0' INT
+}
+
+function ensure_param() {
+  name=$1
+  value=$2
+
+  if [ -z "$value" ]
+  then
+    echo -e "\033[0;33mPlease provide parameter: $name\033[00m"
+    echo -e $USAGE
+    exit 1
+  fi
+}
+
+function set_env_from_app() {
+  app=$1
+
+  if [ "$app" == "system_test" ]; then
+    env="system"
+  else
+    env="test"
+  fi
+}
+
+function wait_on_db_alive {
+  port=$1
+
+  announce "Waiting for DB to be alive"
+
+  psql -lqt -h 127.0.0.1 -p $port -U postgres | cut -d \| -f 1 | grep -qw postgres
+  while [ $? -ne 0 ]; do
+    warn "Trying again ..."
+    sleep 2
+    psql -lqt -h 127.0.0.1 -p $port -U postgres | cut -d \| -f 1 | grep -qw postgres
+  done
+}
+
+function element_in() {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
+}
+
+function notify_success() {
+  notify-send -i thumbs-up "$1"
+}
+
+function notify_error() {
+  notify-send -i red-x "$1"
+}
+
+function print_usage() {
+  usage=$1
+  echo ""
+  echo Usage:
+  echo -e "  $usage"
+}

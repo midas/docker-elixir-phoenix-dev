@@ -6,4 +6,10 @@ within Docker containers
 
 ## Usage
 
-`bin/build --erlang-version=20.1 --elixir-version=1.5.2 --linux-flavor=centos`
+### Building an image in standard mode
+
+`bin/build --elixir-version=1.8.2 --erlang-version=21.3.2 --linux-flavor=centos --linux-version=7.7.1908`
+
+### Building an image in FIPS mode
+
+`bin/build --elixir-version=1.8.2 --erlang-version=21.3.2 --linux-flavor=centos --linux-version=7.7.1908 --fips`
