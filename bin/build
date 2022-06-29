@@ -9,6 +9,7 @@ USAGE="build --elixir-version=1.5.2 --erlang-version=20.1 --linux-flavor=centos 
 
 #me=`basename $0`
 build=true
+cleanup=false
 docker_file_ext=std
 fips_mode=false
 latest=false
@@ -18,6 +19,10 @@ push=true
 for i in "$@"
   do
   case $i in
+      --cleanup)
+        cleanup=true
+        shift
+        ;;
       --erlang-version=*)
 			erlang_version="${i#*=}"
       shift
@@ -79,7 +84,7 @@ image_name=elixir-phoenix-dev
 from=$linux_flavor:$linux_version
 
 if $build; then
-  echo "===> Building $image_name:$tag"
+  announce "Building $image_name:$tag"
   (
     cd $linux_flavor &&
     rm -f Dockerfile &&
@@ -90,14 +95,20 @@ if $build; then
 fi
 
 if $latest; then
-  echo "===> Tagging image as latest"
+  announce "Tagging image as latest"
   docker tag $owner/$image_name:$tag midas/$image_name:latest
 fi
 
 if $push; then
-  echo "===> Pushing $image_name:$tag to Registry"
+  announce "Pushing $image_name:$tag to Registry"
   docker push $owner/$image_name:$tag
   if $latest; then
     docker push $owner/$image_name:latest
   fi
+fi
+
+if $cleanup; then
+  announce "Removing image $image_name:$tag"
+  docker rmi $owner/$image_name:$tag
+  docker rmi -f $(docker images -q -f dangling=true)
 fi

@@ -46,6 +46,7 @@ RUN \
       --without-orber \
       --without-percept \
       --without-typer \
+      --enable-fips \
       --enable-threads \
       --enable-shared-zlib \
       --enable-ssl=dynamic-ssl-lib \
