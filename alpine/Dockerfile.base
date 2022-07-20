@@ -1,8 +1,0 @@
-FROM alpine:3.7
-MAINTAINER Jason Harrelson <jason@lookforwardenterprises.com>
-
-RUN apk --no-cache upgrade && apk --no-cache add \
-    bash binutils-gold ca-certificates clang cmake curl \
-    file gawk gcc g++ git libc-dev libgcc \
-    llvm llvm-libs make openssh openssl python rsync vim wget zsh && \
-    update-ca-certificates --fresh

@@ -90,7 +90,9 @@ if $build; then
     rm -f Dockerfile &&
     export FROM=$from ERLANG_VERSION=$erlang_version ELIXIR_VERSION=$elixir_version &&
     envsubst '${FROM} ${ERLANG_VERSION} ${ELIXIR_VERSION}' < Dockerfile.temp.$docker_file_ext > Dockerfile &&
-    docker build -t midas/$image_name:$tag -f Dockerfile .
+    #docker build --progress=plain --no-cache -t midas/$image_name:$tag -f Dockerfile .
+    docker build --progress=plain -t midas/$image_name:$tag -f Dockerfile .
+    #docker build -t midas/$image_name:$tag -f Dockerfile .
   )
 fi
 
