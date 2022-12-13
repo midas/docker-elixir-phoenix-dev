@@ -81,7 +81,26 @@ fi
 
 echo $tag
 image_name=elixir-phoenix-dev
-from=$linux_flavor:$linux_version
+
+if [[ "$linux_flavor" == "centos" ]]; then
+  if [[ "$linux_version" == "6" ]]; then
+    from="centos:6"
+  elif [[ "$linux_version" == "7" ]]; then
+    from="centos:7"
+  elif [[ "$linux_version" == "8" ]]; then
+    from="quay.io/centos/centos:stream"
+  else
+    error "Invalid --linux-version provided, exiting ..."
+    exit 1
+  fi
+else
+  error "Invalid --linux-flavor provided, exiting ..."
+  exit 1
+fi
+
+echo "Linux flavor: $linux_flavor"
+echo "Linux version: $linux_version"
+echo "From: $from"
 
 if $build; then
   announce "Building $image_name:$tag"

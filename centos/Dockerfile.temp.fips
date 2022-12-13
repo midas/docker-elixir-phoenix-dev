@@ -1,9 +1,14 @@
 FROM ${FROM}
 MAINTAINER Jason Harrelson <jason@lookforwardenterprises.com>
 
-RUN yum clean all && yum -y install epel-release && yum -y update
-RUN yum -y group install "Development Tools"
-RUN yum -y install glibc-devel make ncurses-devel openssl-devel autoconf git wget #wxBase.x86_64 java-1.8.0-openjdk-devel
+# CentOS 6/7
+#RUN yum clean all && yum -y install epel-release && yum -y update
+#RUN yum -y group install "Development Tools"
+#RUN yum -y install glibc-devel make ncurses-devel openssl-devel autoconf git wget #wxBase.x86_64 java-1.8.0-openjdk-devel
+# CentOS 8
+RUN dnf update -y && dnf upgrade -y && dnf install epel-release -y
+RUN dnf group install "Development Tools" -y
+RUN dnf install glibc-devel make ncurses-devel openssl-devel autoconf git wget -y
 
 WORKDIR /tmp/erlang-build
 
